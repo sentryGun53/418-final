@@ -1,4 +1,12 @@
+/*
+
+MAKE:
+g++ main.cpp -o main -I/usr/local/include -lraspicam -lmmal -lmmal_core -lmmal_util -L/opt/vc/lib
+
+*/
+
 #include <ctime>
+#include <unistd.h>
 #include <fstream>
 #include <iostream>
 #include <raspicam/raspicam.h>
@@ -29,10 +37,10 @@ int main ( int argc,char **argv ) {
     Camera.retrieve ( data,raspicam::RASPICAM_FORMAT_RGB );//get camera image
 
     //save
-    std::ofstream outFile ( "raspicam_image.ppm",std::ios::binary );
+    std::ofstream outFile ( "image.ppm",std::ios::binary );
     outFile<<"P6\n"<<Camera.getWidth() <<" "<<Camera.getHeight() <<" 255\n";
     outFile.write ( ( char* ) data, Camera.getImageTypeSize ( raspicam::RASPICAM_FORMAT_RGB ) );
-    cout<<"Image saved at raspicam_image.ppm"<<endl;
+    cout<<"Image saved at image.ppm"<<endl;
 
     //free resrources
     delete data;
