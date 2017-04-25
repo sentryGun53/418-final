@@ -7,6 +7,13 @@ TODO:
   - write output back into input array in background subtration to save some space
   - frame_thresh (results from bg subtraction) only needs to be binary (24x smaller)
 
+TEST HARNESS:
+  - grab background frame and a new frame
+  - feed same frame & background to both algorithms (sequential & parallel)
+  - time execution
+  - compare results
+  - possibly test at different resolutions?
+
 */
 
 #include <ctime>
@@ -16,22 +23,18 @@ TODO:
 #include <raspicam/raspicam.h>
 using namespace std;
 
+#include "write_ppm.cpp"
 #include "bg_sub.cpp"
 #include "blur.cpp"
 #include "blob_detect.cpp"
 
-#define FRAME_WIDTH   640
-#define FRAME_HEIGHT  480
+
+#define FRAME_WIDTH   320
+#define FRAME_HEIGHT  240
 
 
-void write_ppm(unsigned char *image, const char *filename, int width, int height, int size) {
-    std::ofstream outFile (filename,  std::ios::binary);
-    outFile << "P6\n" << width << " " << height << " 255\n";
-    outFile.write (( char* )image, size);
-    cout << "PPM image saved at " << filename << "  - " << width << " x " << height << endl;
-}
 
-int main ( int argc,char **argv ) {
+int main (int argc,  char **argv) {
 
     // initialize camera object
     raspicam::RaspiCam Camera;
@@ -47,8 +50,13 @@ int main ( int argc,char **argv ) {
     unsigned char *background = new unsigned char[img_size_bytes]();
     unsigned char *frame_raw  = new unsigned char[img_size_bytes]();
     unsigned char *frame_blur  = new unsigned char[img_size_bytes]();
-    unsigned char *frame_thresh  = new unsigned char[img_size_bytes]();
-    unsigned char *frame_blobs  = new unsigned char[img_size_bytes]();
+
+    // greyscale threshold image
+    unsigned char *frame_thresh  = new unsigned char[FRAME_WIDTH * FRAME_HEIGHT]();
+
+    // greyscale output image (blobs each shaded with a uniform & unique grey value)
+    unsigned char *frame_blobs  = new unsigned char[FRAME_WIDTH * FRAME_HEIGHT]();
+
 
     // open connection to camera
     cout << "Opening Camera..." << endl;
@@ -57,85 +65,62 @@ int main ( int argc,char **argv ) {
         return -1;
     }
 
-    // sleep(1);
-    Camera.grab();
-    Camera.retrieve(background);
-
     // wait a while until camera stabilizes
     cout << "Sleeping for 3 secs" << endl;
     sleep(3);
 
-    // capture
+
+    // record background
     Camera.grab();
-
-    // extract the image in rgb format
-    Camera.retrieve(frame_raw);
-
-
-    /********************************************************/
-    /*               BEGIN IMAGE PROCESSING                 */
-    /********************************************************/
-
-    cout << "Beginning image processing" << endl;
-
-    // iterate through all pixels
-    // for (int row = 0; row < FRAME_HEIGHT; row++) {
-    //     for (int col = 0; col < FRAME_WIDTH; col++) {
-
-    //         // basic pixel indexing (in order)
-    //         int pixel_index = ((row * FRAME_WIDTH) + col) * 3;
-
-    //         // read each color
-    //         char r = data[pixel_index + 0];
-    //         char g = data[pixel_index + 1];
-    //         char b = data[pixel_index + 2];
-
-    //         // set all red pixels to full brightness (255)
-    //         g = 0;
-
-    //         // write back
-    //         data[pixel_index + 0] = r;
-    //         data[pixel_index + 1] = g;
-    //         data[pixel_index + 2] = b;
-    //     }
-    // }
+    Camera.retrieve(background);
+    cout << "Recorded background." << endl;
 
 
-    int blur_width = 5;
-    int blur_height = 5;
-    unsigned char blur_vector[25] = {3, 3, 3, 3, 3,
-                                    3, 3, 3, 3, 3,
-                                    3, 3, 9, 3, 3,
-                                    3, 3, 3, 3, 3,
-                                    3, 3, 3, 3, 3};
+    for (int i = 0; i < 10; i++) {
+        // capture
+        Camera.grab();
 
-    blur(frame_blur, frame_raw, blur_vector, FRAME_WIDTH, FRAME_HEIGHT, blur_width, blur_height);
-    cout << "  1) Blurring done" << endl;
+        // extract the image in rgb format
+        Camera.retrieve(frame_raw);
 
-    bg_sub(background, frame_blur, frame_thresh, FRAME_WIDTH, FRAME_HEIGHT);
-    cout << "  2) Background subtraction done" << endl;
+        int blur_width = 5;
+        int blur_height = 5;
+        unsigned char blur_vector[25] = {3, 3, 3, 3, 3,
+                                        3, 3, 3, 3, 3,
+                                        3, 3, 9, 3, 3,
+                                        3, 3, 3, 3, 3,
+                                        3, 3, 3, 3, 3};
 
-    unsigned char num_blobs = blob_detect(frame_blobs, frame_thresh, FRAME_WIDTH, FRAME_HEIGHT);
-    cout << "  3) Blob detection done" << endl;
-    cout << "num_blobs = " << (int)num_blobs << endl;
+        blur(frame_blur, frame_raw, blur_vector, FRAME_WIDTH, FRAME_HEIGHT, blur_width, blur_height);
+        // cout << "  1) Blurring done" << endl;
 
-    /********************************************************/
-    /*                 END IMAGE PROCESSING                 */
-    /********************************************************/
+        bg_sub(background, frame_blur, frame_thresh, FRAME_WIDTH, FRAME_HEIGHT);
+        // cout << "  2) Background subtraction done" << endl;
 
-    // save
-    write_ppm(background, "background.ppm", FRAME_WIDTH, FRAME_HEIGHT, img_size_bytes);
-    write_ppm(frame_raw, "frame_raw.ppm", FRAME_WIDTH, FRAME_HEIGHT, img_size_bytes);
-    write_ppm(frame_blur, "frame_blur.ppm", FRAME_WIDTH, FRAME_HEIGHT, img_size_bytes);
-    write_ppm(frame_thresh, "frame_thresh.ppm", FRAME_WIDTH, FRAME_HEIGHT, img_size_bytes);
-    write_ppm(frame_blobs, "frame_blobs.ppm", FRAME_WIDTH, FRAME_HEIGHT, img_size_bytes);
+        struct blob biggest_blob;
+        int num_blobs;
+        num_blobs = blob_detect(biggest_blob, frame_blobs, frame_thresh, FRAME_WIDTH, FRAME_HEIGHT);
+        // cout << "  3) Blob detection done" << endl;
+        // cout << "num_blobs = " << (int)num_blobs << endl;
 
+        /********************************************************/
+        /*                 END IMAGE PROCESSING                 */
+        /********************************************************/
+
+        // save
+        // write_ppm(background, "background.ppm", FRAME_WIDTH, FRAME_HEIGHT, img_size_bytes);
+        // write_ppm(frame_raw, "frame_raw.ppm", FRAME_WIDTH, FRAME_HEIGHT, img_size_bytes);
+        // write_ppm(frame_blur, "frame_blur.ppm", FRAME_WIDTH, FRAME_HEIGHT, img_size_bytes);
+        write_ppm(frame_thresh, "frame_thresh.ppm", FRAME_WIDTH, FRAME_HEIGHT, img_size_bytes);
+        write_ppm(frame_blobs, "frame_blobs.ppm", FRAME_WIDTH, FRAME_HEIGHT, img_size_bytes);
+
+    }
 
     // free resrources
     delete background;
     delete frame_raw;
     delete frame_blur;
     delete frame_thresh;
-    delete frame_blobs;
+    // delete frame_blobs;
     return 0;
 }
