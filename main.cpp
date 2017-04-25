@@ -45,8 +45,8 @@ int main ( int argc,char **argv ) {
 
     // setup buffers for image data
     unsigned char *background = new unsigned char[img_size_bytes]();
-    unsigned char *blur_background = new unsigned char[img_size_bytes]();
     unsigned char *frame_raw  = new unsigned char[img_size_bytes]();
+    unsigned char *frame_blur  = new unsigned char[img_size_bytes]();
     unsigned char *frame_thresh  = new unsigned char[img_size_bytes]();
     unsigned char *frame_blobs  = new unsigned char[img_size_bytes]();
 
@@ -107,8 +107,8 @@ int main ( int argc,char **argv ) {
                                     3, 3, 3, 3, 3,
                                     3, 3, 3, 3, 3};
 
-    blur(blur_background, background, blur_vector, FRAME_WIDTH, FRAME_HEIGHT, blur_width, blur_height);
-    bg_sub(blur_background, frame_raw, frame_thresh, FRAME_WIDTH, FRAME_HEIGHT);
+    blur(frame_blur, frame_raw, blur_vector, FRAME_WIDTH, FRAME_HEIGHT, blur_width, blur_height);
+    bg_sub(background, frame_blur, frame_thresh, FRAME_WIDTH, FRAME_HEIGHT);
     unsigned char num_blobs = blob_detect(frame_blobs, frame_thresh, FRAME_WIDTH, FRAME_HEIGHT);
 
     cout << "num_blobs = " << (int)num_blobs << endl;
@@ -119,16 +119,16 @@ int main ( int argc,char **argv ) {
 
     // save
     write_ppm(background, "background.ppm", FRAME_WIDTH, FRAME_HEIGHT, img_size_bytes);
-    write_ppm(blur_background, "blur_background.ppm", FRAME_WIDTH, FRAME_HEIGHT, img_size_bytes);
     write_ppm(frame_raw, "frame_raw.ppm", FRAME_WIDTH, FRAME_HEIGHT, img_size_bytes);
+    write_ppm(frame_blur, "frame_blur.ppm", FRAME_WIDTH, FRAME_HEIGHT, img_size_bytes);
     write_ppm(frame_thresh, "frame_thresh.ppm", FRAME_WIDTH, FRAME_HEIGHT, img_size_bytes);
     write_ppm(frame_blobs, "frame_blobs.ppm", FRAME_WIDTH, FRAME_HEIGHT, img_size_bytes);
 
 
     // free resrources
     delete background;
-    delete blur_background;
     delete frame_raw;
+    delete frame_blur;
     delete frame_thresh;
     delete frame_blobs;
     return 0;

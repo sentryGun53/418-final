@@ -1,7 +1,7 @@
 /* Background subtraction */
 #include <math.h>
 
-#define THRESHOLD 10
+#define THRESHOLD 30
 
 void bg_sub(unsigned char *bg, unsigned char *fr, unsigned char *res,
                       int width, int height) {

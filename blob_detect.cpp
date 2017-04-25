@@ -6,7 +6,6 @@ http://www.labbookpages.co.uk/software/imgProc/blobDetection.html
 
 #define IDX(R, C)   ((((R) * width) + (C)) * 3)
 
-#define MIN(A, B)   (((A) < (B)) ? (A) : (B))
 
 unsigned char blob_detect(unsigned char *output, unsigned char *input, int width, int height) {
 
@@ -36,10 +35,10 @@ unsigned char blob_detect(unsigned char *output, unsigned char *input, int width
 
                     // find the minimum label out of this group
                     unsigned char minimum_label = 255;
-                    if (label_up_left  != 0)  minimum_label = MIN(minimum_label, label_up_left);
-                    if (label_up       != 0)  minimum_label = MIN(minimum_label, label_up);
-                    if (label_up_right != 0)  minimum_label = MIN(minimum_label, label_up_right);
-                    if (label_left     != 0)  minimum_label = MIN(minimum_label, label_left);
+                    if (label_up_left  != 0)  minimum_label = min(minimum_label, label_up_left);
+                    if (label_up       != 0)  minimum_label = min(minimum_label, label_up);
+                    if (label_up_right != 0)  minimum_label = min(minimum_label, label_up_right);
+                    if (label_left     != 0)  minimum_label = min(minimum_label, label_left);
 
                     // label all of the active neighbor pixels with the new label
                     if (label_up_left  != 0)  output[IDX( row-1, col-1 )] = minimum_label;
