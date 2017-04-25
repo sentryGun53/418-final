@@ -33,16 +33,13 @@ struct blob {
  * the return int value is the number of blobs total that were detected
  */
 
-int blob_detect(struct blob *biggest_blob, unsigned char *output, unsigned char *input, int width, int height) {
+int blob_detect(struct blob &biggest_blob, unsigned char *output, unsigned char *input, int width, int height) {
 
     // begin labels at 1 so all relevant labels are nonzero.
     int label_counter = 1;
 
     // our list of blobs. TODO: better calculation of size here
     struct blob blobs[width * height / 4] = {0};
-
-    // buffer to store our labelled pixels. only greyscale is needed
-    output = {0};
 
     // iterate through image
     for (int row = 1; row < height-1; row++) {
@@ -53,6 +50,8 @@ int blob_detect(struct blob *biggest_blob, unsigned char *output, unsigned char 
              *      A B C
              *      D X
              */
+
+            output[IDX(row, col)] = 0;
 
             // label that will be assigned to the current pixel. calculated below
             int lbl_x = 0;
@@ -160,7 +159,7 @@ int blob_detect(struct blob *biggest_blob, unsigned char *output, unsigned char 
         }
     }
 
-    // OPTIONAL: update image labels
+    // OPTIONAL: update to show merged blobs in the output image
     for (int row = 1; row < height-1; row++) {
         for (int col = 1; col < width-1; col++) {
             if (output[IDX(row, col)] != 0) {
@@ -171,14 +170,14 @@ int blob_detect(struct blob *biggest_blob, unsigned char *output, unsigned char 
 
 
     // OPTIONAL: print blob statistics
-    for (int i = 0; i < num_blobs; i++) {
-        cout << "[" << i << "]: label_table=" << (int)consolidated_blobs[i].label <<
-                             ",\t x_min=" << consolidated_blobs[i].x_min <<
-                             ",\t x_max=" << consolidated_blobs[i].x_max <<
-                             ",\t y_min=" << consolidated_blobs[i].y_min <<
-                             ",\t y_max=" << consolidated_blobs[i].y_max <<
-                             ",\t mass=" << consolidated_blobs[i].mass <<  endl;
-    }
+    // for (int i = 0; i < num_blobs; i++) {
+    //     cout << "[" << i << "]: label_table=" << (int)consolidated_blobs[i].label <<
+    //                          ",\t x_min=" << consolidated_blobs[i].x_min <<
+    //                          ",\t x_max=" << consolidated_blobs[i].x_max <<
+    //                          ",\t y_min=" << consolidated_blobs[i].y_min <<
+    //                          ",\t y_max=" << consolidated_blobs[i].y_max <<
+    //                          ",\t mass=" << consolidated_blobs[i].mass <<  endl;
+    // }
 
     // find biggest blob
     int biggest_blob_index = 0;
@@ -213,13 +212,16 @@ int blob_detect(struct blob *biggest_blob, unsigned char *output, unsigned char 
             output[IDX(row, col)] = output[IDX(row, col)] * 30;
 
             // bounding rails
-            if (col == x_min || col == x_max || row == y_min || row == y_max) {
+            if ((col == x_min || col == x_max) && (row > y_min && row < y_max)) {
+                output[IDX(row, col)] = 255;
+            }
+            if ((row == y_min || row == y_max) && (col > x_min && col < x_max)) {
                 output[IDX(row, col)] = 255;
             }
 
             // centroid cross
             if (abs(col - centroid_x) < 2 || abs(row - centroid_y) < 2) {
-                if (row > y_max && row < y_max && col > x_min && col < x_max) {
+                if (row > y_min+10 && row < y_max-10 && col > x_min+10 && col < x_max-10) {
                     output[IDX(row, col)] = 255;
                 }
             }

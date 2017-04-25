@@ -83,6 +83,7 @@ int main (int argc,  char **argv) {
         // extract the image in rgb format
         Camera.retrieve(frame_raw);
 
+        // blur raw frame
         int blur_width = 5;
         int blur_height = 5;
         unsigned char blur_vector[25] = {3, 3, 3, 3, 3,
@@ -90,29 +91,26 @@ int main (int argc,  char **argv) {
                                         3, 3, 9, 3, 3,
                                         3, 3, 3, 3, 3,
                                         3, 3, 3, 3, 3};
-
         blur(frame_blur, frame_raw, blur_vector, FRAME_WIDTH, FRAME_HEIGHT, blur_width, blur_height);
-        // cout << "  1) Blurring done" << endl;
 
+        // background subtractiom
         bg_sub(background, frame_blur, frame_thresh, FRAME_WIDTH, FRAME_HEIGHT);
-        // cout << "  2) Background subtraction done" << endl;
 
+        // blob detection
         struct blob biggest_blob;
         int num_blobs;
         num_blobs = blob_detect(biggest_blob, frame_blobs, frame_thresh, FRAME_WIDTH, FRAME_HEIGHT);
-        // cout << "  3) Blob detection done" << endl;
-        // cout << "num_blobs = " << (int)num_blobs << endl;
 
         /********************************************************/
         /*                 END IMAGE PROCESSING                 */
         /********************************************************/
 
         // save
-        // write_ppm(background, "background.ppm", FRAME_WIDTH, FRAME_HEIGHT, img_size_bytes);
-        // write_ppm(frame_raw, "frame_raw.ppm", FRAME_WIDTH, FRAME_HEIGHT, img_size_bytes);
-        // write_ppm(frame_blur, "frame_blur.ppm", FRAME_WIDTH, FRAME_HEIGHT, img_size_bytes);
-        write_ppm(frame_thresh, "frame_thresh.ppm", FRAME_WIDTH, FRAME_HEIGHT, img_size_bytes);
-        write_ppm(frame_blobs, "frame_blobs.ppm", FRAME_WIDTH, FRAME_HEIGHT, img_size_bytes);
+        write_ppm(background, "background.ppm", FRAME_WIDTH, FRAME_HEIGHT, img_size_bytes);
+        write_ppm(frame_raw, "frame_raw.ppm", FRAME_WIDTH, FRAME_HEIGHT, img_size_bytes);
+        write_ppm(frame_blur, "frame_blur.ppm", FRAME_WIDTH, FRAME_HEIGHT, img_size_bytes);
+        write_ppm_greyscale(frame_thresh, "frame_thresh.ppm", FRAME_WIDTH, FRAME_HEIGHT, FRAME_WIDTH * FRAME_HEIGHT);
+        write_ppm_greyscale(frame_blobs, "frame_blobs.ppm", FRAME_WIDTH, FRAME_HEIGHT, FRAME_WIDTH * FRAME_HEIGHT);
 
     }
 
