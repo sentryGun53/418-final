@@ -1,25 +1,8 @@
-/*
-
-MAKE:
-  g++ main.cpp -o main -I/usr/local/include -lraspicam -lmmal -lmmal_core -lmmal_util -L/opt/vc/lib
-
-TODO:
-  - write output back into input array in background subtration to save some space
-  - frame_thresh (results from bg subtraction) only needs to be binary (24x smaller)
-
-TEST HARNESS:
-  - grab background frame and a new frame
-  - feed same frame & background to both algorithms (sequential & parallel)
-  - time execution
-  - compare results
-  - possibly test at different resolutions?
-
-*/
-
 #include <ctime>
 #include <unistd.h>
 #include <fstream>
 #include <iostream>
+#include <ctime>
 #include <raspicam/raspicam.h>
 using namespace std;
 
@@ -69,8 +52,14 @@ int main (int argc,  char **argv) {
         Camera.retrieve(frame_raw);
         write_ppm(frame_raw, "raw.ppm", FRAME_WIDTH, FRAME_HEIGHT, img_size_bytes);
 
-        // TODO timing
+        std::clock_t start;
+        double duration;
+        start = std::clock();
+
         seq(img_size_bytes, FRAME_WIDTH, FRAME_HEIGHT, background, frame_raw);
+
+        duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+        std::cout<<"Sequential time: "<< duration <<'\n';
 
         // TODO timing
         //par(img_size_bytes, FRAME_WIDTH, FRAME_HEIGHT, background, frame_raw);
