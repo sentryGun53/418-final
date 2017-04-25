@@ -76,6 +76,8 @@ int main ( int argc,char **argv ) {
     /*               BEGIN IMAGE PROCESSING                 */
     /********************************************************/
 
+    cout << "Beginning image processing" << endl;
+
     // iterate through all pixels
     // for (int row = 0; row < FRAME_HEIGHT; row++) {
     //     for (int col = 0; col < FRAME_WIDTH; col++) {
@@ -108,9 +110,13 @@ int main ( int argc,char **argv ) {
                                     3, 3, 3, 3, 3};
 
     blur(frame_blur, frame_raw, blur_vector, FRAME_WIDTH, FRAME_HEIGHT, blur_width, blur_height);
-    bg_sub(background, frame_blur, frame_thresh, FRAME_WIDTH, FRAME_HEIGHT);
-    unsigned char num_blobs = blob_detect(frame_blobs, frame_thresh, FRAME_WIDTH, FRAME_HEIGHT);
+    cout << "  1) Blurring done" << endl;
 
+    bg_sub(background, frame_blur, frame_thresh, FRAME_WIDTH, FRAME_HEIGHT);
+    cout << "  2) Background subtraction done" << endl;
+
+    unsigned char num_blobs = blob_detect(frame_blobs, frame_thresh, FRAME_WIDTH, FRAME_HEIGHT);
+    cout << "  3) Blob detection done" << endl;
     cout << "num_blobs = " << (int)num_blobs << endl;
 
     /********************************************************/
