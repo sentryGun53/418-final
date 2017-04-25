@@ -9,12 +9,13 @@ using namespace std;
 #include "blob_detect.cpp"
 
 void seq(int img_size_bytes, int frame_width, int frame_height,
-         unsigned char *background, unsigned char *frame_raw) {
+         unsigned char *background, unsigned char *frame_raw,
+         unsigned char *frame_blobs) {
 
     // setup buffers for image data
     unsigned char *frame_blur = new unsigned char[img_size_bytes]();
     unsigned char *frame_thresh = new unsigned char[frame_width * frame_height]();
-    unsigned char *frame_blobs = new unsigned char[frame_width * frame_height]();
+    //unsigned char *frame_blobs = new unsigned char[frame_width * frame_height]();
 
     // blur raw frame
     int blur_width = 5;

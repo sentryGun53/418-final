@@ -3,11 +3,13 @@
 #include <fstream>
 #include <iostream>
 #include <ctime>
+#include <cassert>
 #include <raspicam/raspicam.h>
 using namespace std;
 
 #include "write_ppm.cpp"
 #include "sequential.cpp"
+#include "compare.cpp"
 
 #define FRAME_WIDTH   320
 #define FRAME_HEIGHT  240
@@ -27,6 +29,7 @@ int main (int argc,  char **argv) {
     // setup buffers for image data
     unsigned char *background = new unsigned char[img_size_bytes]();
     unsigned char *frame_raw  = new unsigned char[img_size_bytes]();
+    unsigned char *frame_blobs_seq = new unsigned char[FRAME_WIDTH * FRAME_HEIGHT]();
 
     // open connection to camera
     cout << "Opening Camera..." << endl;
@@ -56,10 +59,12 @@ int main (int argc,  char **argv) {
         double duration;
         start = std::clock();
 
-        seq(img_size_bytes, FRAME_WIDTH, FRAME_HEIGHT, background, frame_raw);
+        seq(img_size_bytes, FRAME_WIDTH, FRAME_HEIGHT, background, frame_raw, frame_blobs_seq);
 
         duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
         std::cout<<"Sequential time: "<< duration <<'\n';
+
+        assert(compare(frame_blobs_seq, frame_blobs_seq, FRAME_WIDTH, FRAME_HEIGHT));
 
         // TODO timing
         //par(img_size_bytes, FRAME_WIDTH, FRAME_HEIGHT, background, frame_raw);
@@ -68,5 +73,6 @@ int main (int argc,  char **argv) {
     // free resrources
     delete background;
     delete frame_raw;
+    delete frame_blobs_seq;
     return 0;
 }
