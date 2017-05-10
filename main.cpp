@@ -1,7 +1,7 @@
 /*
 
 MAKE:
-  g++ main.cpp -o main -I/usr/local/include -lraspicam -lmmal -lmmal_core -lmmal_util -L/opt/vc/lib
+  g++ main.cpp -o main -I/usr/local/include -lraspicam -lmmal -lmmal_core -lmmal_util -L/opt/vc/lib -fopenmp
 
 TODO:
   - write output back into input array in background subtration to save some space
@@ -17,6 +17,7 @@ TEST HARNESS:
 */
 
 #include <ctime>
+#include <omp.h>
 #include <unistd.h>
 #include <fstream>
 #include <iostream>
@@ -29,12 +30,15 @@ using namespace std;
 #include "blob_detect.cpp"
 
 
-#define FRAME_WIDTH   320
-#define FRAME_HEIGHT  240
+#define FRAME_WIDTH   640
+#define FRAME_HEIGHT  480
 
 
 
 int main (int argc,  char **argv) {
+
+    std::cout << omp_get_max_threads() << " OMP threads available" << std::endl;
+    std::cout << omp_get_num_threads() << " OMP threads currently in use " << std::endl;
 
     // initialize camera object
     raspicam::RaspiCam Camera;

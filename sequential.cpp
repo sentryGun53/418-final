@@ -39,9 +39,9 @@ void seq(int img_size_bytes, int frame_width, int frame_height,
     // save
     //write_ppm(background, "background.ppm", frame_width, frame_height, img_size_bytes);
     //write_ppm(frame_raw, "frame_raw.ppm", frame_width, frame_height, img_size_bytes);
-    write_ppm(frame_blur, "frame_blur_seq.ppm", frame_width, frame_height, img_size_bytes);
-    write_ppm_greyscale(frame_thresh, "frame_thresh_seq.ppm", frame_width, frame_height, frame_width * frame_height);
-    write_ppm_greyscale(frame_blobs, "frame_blobs_seq.ppm", frame_width, frame_height, frame_width * frame_height);
+    // write_ppm(frame_blur, "frame_blur_seq.ppm", frame_width, frame_height, img_size_bytes);
+    // write_ppm_greyscale(frame_thresh, "frame_thresh_seq.ppm", frame_width, frame_height, frame_width * frame_height);
+    // write_ppm_greyscale(frame_blobs, "frame_blobs_seq.ppm", frame_width, frame_height, frame_width * frame_height);
 
     // free resources
     delete frame_blur;

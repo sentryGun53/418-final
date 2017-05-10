@@ -1,8 +1,8 @@
-/*
+/* Blob Detection */
 
-http://www.labbookpages.co.uk/software/imgProc/blobDetection.html
+// http://www.labbookpages.co.uk/software/imgProc/blobDetection.html
 
-*/
+#include <omp.h>
 
 #define IDX(R, C)   ((((R) * width) + (C)))
 

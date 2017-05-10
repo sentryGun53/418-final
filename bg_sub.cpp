@@ -8,7 +8,9 @@
  *  res is a greyscale image (1 byte per pixel)
  */
 void bg_sub(unsigned char *bg, unsigned char *fr, unsigned char *res, int width, int height) {
+    #pragma omp parallel for
     for (int row = 0; row < height; row++) {
+        #pragma omp parallel for
         for (int col = 0; col < width; col++) {
             int pixel_index_rgb = ((row * width) + col) * 3;
             int pixel_index_grey = ((row * width) + col);
