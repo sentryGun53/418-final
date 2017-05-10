@@ -9,6 +9,7 @@ using namespace std;
 
 #include "write_ppm.cpp"
 #include "sequential.cpp"
+#include "parallel.cpp"
 #include "compare.cpp"
 
 #define FRAME_WIDTH   320
@@ -30,6 +31,7 @@ int main (int argc,  char **argv) {
     unsigned char *background = new unsigned char[img_size_bytes]();
     unsigned char *frame_raw  = new unsigned char[img_size_bytes]();
     unsigned char *frame_blobs_seq = new unsigned char[FRAME_WIDTH * FRAME_HEIGHT]();
+    unsigned char *frame_blobs_par = new unsigned char[FRAME_WIDTH * FRAME_HEIGHT]();
 
     // open connection to camera
     cout << "Opening Camera..." << endl;
@@ -64,10 +66,14 @@ int main (int argc,  char **argv) {
         duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
         std::cout<<"Sequential time: "<< duration <<'\n';
 
-        assert(compare(frame_blobs_seq, frame_blobs_seq, FRAME_WIDTH, FRAME_HEIGHT));
+        start = std::clock();
+        par(img_size_bytes, FRAME_WIDTH, FRAME_HEIGHT, background, frame_raw, frame_blobs_par);
+        duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+        std::cout<<"Parallel time: "<< duration <<'\n';
 
-        // TODO timing
-        //par(img_size_bytes, FRAME_WIDTH, FRAME_HEIGHT, background, frame_raw);
+        assert(compare(frame_blobs_seq, frame_blobs_par, FRAME_WIDTH, FRAME_HEIGHT));
+
+
     //}
 
     // free resrources
