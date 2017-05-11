@@ -8,19 +8,6 @@
 
 #include <stdlib.h>
 
-struct blob {
-    int label;
-    int x_min;
-    int x_max;
-    int y_min;
-    int y_max;
-    int centroid_x;
-    int centroid_y;
-    unsigned long sum_x;
-    unsigned long sum_y;
-    int mass;
-};
-
 /*
  * input is a greyscale threshold image (1 byte per pixel) with
  * nonzero pixel values if motion was detected in a pixel
@@ -34,16 +21,16 @@ struct blob {
  */
 
 
-#define MAX_BLOBS_PER_THREAD 50
+#define MAX_BLOBS_PER_THREAD 300
 
-void label(unsigned char *output, unsigned char *input, struct blob *blobs, int width, int height, int start_row, int end_row, int start_label) {
+void label(unsigned short *output, unsigned char *input, struct blob *blobs, short width, short height, short start_row, short end_row, short start_label) {
 
     // begin labelling blobs at this number
-    int label_counter = start_label;
+    short label_counter = start_label;
 
     // iterate through image
-    for (int row = start_row; row < end_row; row++) {
-        for (int col = 1; col < width-1; col++) {
+    for (short row = start_row; row <= end_row; row++) {
+        for (short col = 1; col < width-1; col++) {
 
             /* we care about the pixel above, to the left, above-left, and above-right.
              * pixels are labelled as follows (X = current pixel):
@@ -54,20 +41,20 @@ void label(unsigned char *output, unsigned char *input, struct blob *blobs, int 
             // output[IDX(row, col)] = 0;
 
             // label that will be assigned to the current pixel. calculated below
-            int lbl_x = 0;
+            short lbl_x = 0;
 
             // if our pixel is active, check the neighboring pixels to determine it's label
             if (input[IDX(row, col)] > 0) {
 
                 // get the labels for pixels a, b, c, d  - these have already been calculated.
-                int lbl_a = output[IDX(row-1, col-1)];
-                int lbl_b = output[IDX(row-1, col  )];
-                int lbl_c = output[IDX(row-1, col+1)];
-                int lbl_d = output[IDX(row,   col-1)];
+                short lbl_a = output[IDX(row-1, col-1)];
+                short lbl_b = output[IDX(row-1, col  )];
+                short lbl_c = output[IDX(row-1, col+1)];
+                short lbl_d = output[IDX(row,   col-1)];
 
                 // find the minimum label out of all the neighbors, by checking
                 // each label and updating min_label if we find a new minimum
-                int min_label = 9999;
+                short min_label = 9999;
                 if (lbl_a != 0 && lbl_a < min_label)  min_label = lbl_a;
                 if (lbl_b != 0 && lbl_b < min_label)  min_label = lbl_b;
                 if (lbl_c != 0 && lbl_c < min_label)  min_label = lbl_c;
@@ -114,30 +101,30 @@ void label(unsigned char *output, unsigned char *input, struct blob *blobs, int 
     }
 
     // redirect all labels within a blob to equal the lowest-index label used by that blob
-    for (int i = 1; i < label_counter; i++) {
-        if (blobs[i].label != i) {
+    for (short i = start_label; i < start_label + MAX_BLOBS_PER_THREAD; i++) {
+        if (blobs[i].label != i && blobs[i].label != 0) {
             blobs[i].label = blobs[blobs[i].label].label;
         }
     }
 }
 
-void stitch(unsigned char *output, unsigned char *input, struct blob *blobs, int width, int height, int stitch_row) {
-    int row = stitch_row;
-    for (int col = 1; col < width-1; col++) {
+void stitch(unsigned short *output, unsigned char *input, struct blob *blobs, short width, short height, short stitch_row) {
+    short row = stitch_row;
+    for (short col = 1; col < width-1; col++) {
 
         /* we care about the pixel above, above-left, and above-right.
          * pixels are labelled as follows (X = current pixel):
          *      A B C
          *        X
          */
-        int lbl_x = output[IDX(row, col)];
-        int lbl_a = output[IDX(row-1, col-1)];
-        int lbl_b = output[IDX(row-1, col  )];
-        int lbl_c = output[IDX(row-1, col+1)];
+        short lbl_x = output[IDX(row, col)];
+        short lbl_a = output[IDX(row-1, col-1)];
+        short lbl_b = output[IDX(row-1, col  )];
+        short lbl_c = output[IDX(row-1, col+1)];
 
         // find the minimum label out of all the neighbors, by checking
         // each label and updating min_label if we find a new minimum
-        int min_label = 9999;
+        short min_label = 9999;
         if (lbl_a != 0 && lbl_a < min_label)  min_label = lbl_a;
         if (lbl_b != 0 && lbl_b < min_label)  min_label = lbl_b;
         if (lbl_c != 0 && lbl_c < min_label)  min_label = lbl_c;
@@ -152,50 +139,52 @@ void stitch(unsigned char *output, unsigned char *input, struct blob *blobs, int
     }
 }
 
-int blob_detect_par(struct blob &biggest_blob, unsigned char *output, unsigned char *input, int width, int height) {
+int blob_detect_par(struct blob &biggest_blob, unsigned short *output, unsigned char *input, short width, short height) {
 
     // our list of blobs. TODO: better calculation of size here
     struct blob blobs[MAX_BLOBS_PER_THREAD*4] = {0};
 
     /*
      *   ThreadID   start_row   end_row
-     *   0          1           79
-     *   1          80          159
-     *   2          160         239
-     *   3          240         319
+     *   0          1           59
+     *   1          60          119
+     *   2          120         159
+     *   3          180         219
      */
-     // spawn 4 threads
-    label(output, input, blobs, width, height,    1,   79,    1 );
-    label(output, input, blobs, width, height,   80,  159,   51 );
-    label(output, input, blobs, width, height,  160,  239,  101 );
-    label(output, input, blobs, width, height,  240,  319,  151 );
+
+
+    // spawn 4 threads
+    label(output, input, blobs, width, height,    1,   59,    1 );
+    label(output, input, blobs, width, height,   60,  119,   61 );
+    label(output, input, blobs, width, height,  120,  159,  121 );
+    label(output, input, blobs, width, height,  180,  219,  181 );
     // join threads
 
     // stitch
-    stitch(outout, input, blobs, width, height,   80 );
-    stitch(outout, input, blobs, width, height,  160 );
-    stitch(outout, input, blobs, width, height,  240 );
+    stitch(output, input, blobs, width, height,   60 );
+    stitch(output, input, blobs, width, height,  120 );
+    stitch(output, input, blobs, width, height,  180 );
 
 
     // redirect all labels within a blob to equal the lowest-index label used by that blob
-    for (int i = 1; i < MAX_BLOBS_PER_THREAD*4; i++) {
+    for (short i = 1; i < MAX_BLOBS_PER_THREAD*4; i++) {
         if (blobs[i].label != i) {
             blobs[i].label = blobs[blobs[i].label].label;
         }
     }
 
     // merge blobs that touch, put resulting list of blobs into consolidated_blobs[]
-    struct blob consolidated_blobs[label_counter];
-    int num_blobs = 0;
+    struct blob consolidated_blobs[MAX_BLOBS_PER_THREAD];
+    short num_blobs = 0;
 
     // go thorugh the un-merged list backwards, and merge towards beginning
-    for (int i = MAX_BLOBS_PER_THREAD*4 - 1; i > 0; i--) {
+    for (short i = MAX_BLOBS_PER_THREAD*4 - 1; i > 0; i--) {
 
         // if this blob's label points to a different blob, merge with the lower blob
         if (blobs[i].label != i) {
 
             // which blob to merge with
-            int d = blobs[i].label;
+            short d = blobs[i].label;
 
             // merge max/min and mass table into the lower entry (combine blobs)
             if (blobs[d].x_min > blobs[i].x_min)  blobs[d].x_min = blobs[i].x_min;
@@ -225,8 +214,8 @@ int blob_detect_par(struct blob &biggest_blob, unsigned char *output, unsigned c
     }
 
     // OPTIONAL: update to show merged blobs in the output image
-    for (int row = 1; row < height-1; row++) {
-        for (int col = 1; col < width-1; col++) {
+    for (short row = 1; row < height-1; row++) {
+        for (short col = 1; col < width-1; col++) {
             if (output[IDX(row, col)] != 0) {
                 output[IDX(row, col)] = blobs[output[IDX(row, col)]].label;
             }
@@ -245,8 +234,8 @@ int blob_detect_par(struct blob &biggest_blob, unsigned char *output, unsigned c
     // }
 
     // find biggest blob
-    int biggest_blob_index = 0;
-    for (int i = 0; i < num_blobs; i++) {
+    short biggest_blob_index = 0;
+    for (short i = 0; i < num_blobs; i++) {
         if (consolidated_blobs[i].mass > consolidated_blobs[biggest_blob_index].mass)  biggest_blob_index = i;
     }
 
@@ -261,19 +250,19 @@ int blob_detect_par(struct blob &biggest_blob, unsigned char *output, unsigned c
     biggest_blob.centroid_y = consolidated_blobs[biggest_blob_index].centroid_y;
 
     // OPTIONAL: draw bounding box around biggest blob
-    int x_min = biggest_blob.x_min;
-    int x_max = biggest_blob.x_max;
-    int y_min = biggest_blob.y_min;
-    int y_max = biggest_blob.y_max;
+    short x_min = biggest_blob.x_min;
+    short x_max = biggest_blob.x_max;
+    short y_min = biggest_blob.y_min;
+    short y_max = biggest_blob.y_max;
 
     // OPTIONAL: draw centroid
-    int centroid_x = biggest_blob.centroid_x;
-    int centroid_y = biggest_blob.centroid_y;
+    short centroid_x = biggest_blob.centroid_x;
+    short centroid_y = biggest_blob.centroid_y;
     cout << centroid_x << "," << centroid_y << endl;
 
     // OPTIONAL: magnify brightness differences and draw bounding boxes
-    for (int row = 1; row < height-1; row++) {
-        for (int col = 1; col < width-1; col++) {
+    for (short row = 1; row < height-1; row++) {
+        for (short col = 1; col < width-1; col++) {
             output[IDX(row, col)] = output[IDX(row, col)] * 30;
 
             // bounding rails

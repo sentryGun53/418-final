@@ -33,7 +33,7 @@ struct blob {
  * the return int value is the number of blobs total that were detected
  */
 
-int blob_detect(struct blob &biggest_blob, unsigned char *output, unsigned char *input, int width, int height) {
+int blob_detect(struct blob &biggest_blob, unsigned short *output, unsigned char *input, short width, short height) {
 
     // begin labels at 1 so all relevant labels are nonzero.
     int label_counter = 1;

@@ -30,8 +30,8 @@ int main (int argc,  char **argv) {
     // setup buffers for image data
     unsigned char *background = new unsigned char[img_size_bytes]();
     unsigned char *frame_raw  = new unsigned char[img_size_bytes]();
-    unsigned char *frame_blobs_seq = new unsigned char[FRAME_WIDTH * FRAME_HEIGHT]();
-    unsigned char *frame_blobs_par = new unsigned char[FRAME_WIDTH * FRAME_HEIGHT]();
+    unsigned short *frame_blobs_seq = new unsigned short[FRAME_WIDTH * FRAME_HEIGHT]();
+    unsigned short *frame_blobs_par = new unsigned short[FRAME_WIDTH * FRAME_HEIGHT]();
 
     // open connection to camera
     cout << "Opening Camera..." << endl;
