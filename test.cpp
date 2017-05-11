@@ -78,5 +78,6 @@ int main (int argc,  char **argv) {
     delete background;
     delete frame_raw;
     delete frame_blobs_seq;
+    delete frame_blobs_par;
     return 0;
 }
