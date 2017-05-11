@@ -57,19 +57,17 @@ int main (int argc,  char **argv) {
         Camera.retrieve(frame_raw);
         write_ppm(frame_raw, "raw.ppm", FRAME_WIDTH, FRAME_HEIGHT, img_size_bytes);
 
-        std::clock_t start;
-        double duration;
-        start = std::clock();
-
+        std::clock_t start_seq = std::clock();
         seq(img_size_bytes, FRAME_WIDTH, FRAME_HEIGHT, background, frame_raw, frame_blobs_seq);
+        double duration_seq = (std::clock() - start_seq) / (double) CLOCKS_PER_SEC;
+        std::cout<<"Sequential time: "<< duration_seq <<'\n';
 
-        duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
-        std::cout<<"Sequential time: "<< duration <<'\n';
-
-        start = std::clock();
+        std::clock_t start_par = std::clock();
         par(img_size_bytes, FRAME_WIDTH, FRAME_HEIGHT, background, frame_raw, frame_blobs_par);
-        duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
-        std::cout<<"Parallel time: "<< duration <<'\n';
+        double duration_par = (std::clock() - start_par) / (double) CLOCKS_PER_SEC;
+        std::cout<<"Parallel time: "<< duration_par <<'\n';
+
+        std::cout<<"Sequential time - Parallel time: "<< (duration_seq - duration_par) <<'\n';
 
         assert(compare(frame_blobs_seq, frame_blobs_par, FRAME_WIDTH, FRAME_HEIGHT));
 

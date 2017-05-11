@@ -8,6 +8,7 @@ using namespace std;
 //#include "blur.cpp"
 //#include "blob_detect.cpp"
 #include "blur_par.cpp"
+#include "bg_sub_par.cpp"
 
 void par(int img_size_bytes, int frame_width, int frame_height,
          unsigned char *background, unsigned char *frame_raw,
@@ -29,7 +30,7 @@ void par(int img_size_bytes, int frame_width, int frame_height,
     blur_parallel(frame_blur, frame_raw, blur_vector, frame_width, frame_height, blur_width, blur_height);
 
     // background subtractiom
-    bg_sub(background, frame_blur, frame_thresh, frame_width, frame_height);
+    bg_sub_parallel(background, frame_blur, frame_thresh, frame_width, frame_height);
 
     // blob detection
     struct blob biggest_blob;
