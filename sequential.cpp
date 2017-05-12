@@ -18,14 +18,12 @@ void seq(int img_size_bytes, int frame_width, int frame_height,
     //unsigned char *frame_blobs = new unsigned char[frame_width * frame_height]();
 
     // blur raw frame
-    int blur_width = 5;
-    int blur_height = 5;
+    int blur_width = 3;
+    int blur_height = 3;
     unsigned char blur_vector[blur_width * blur_height] =
-    {3, 3, 3, 3, 3,
-     3, 3, 3, 3, 3,
-     3, 3, 9, 3, 3,
-     3, 3, 3, 3, 3,
-     3, 3, 3, 3, 3};
+    {3, 3, 3,
+     3, 9, 3,
+     3, 3, 3};
     std::clock_t start = std::clock();
     blur(frame_blur, frame_raw, blur_vector, frame_width, frame_height, blur_width, blur_height);
     double duration_blur = (std::clock() - start) / (double) CLOCKS_PER_SEC;
