@@ -4,12 +4,8 @@
 #include <iostream>
 using namespace std;
 
-//#include "bg_sub.cpp"
-//#include "blur.cpp"
-//#include "blob_detect.cpp"
-#include "blur_par.cpp"
-//#include "bg_sub_par.cpp"
 #include "bg_sub_simd.h"
+#include "blur_par.cpp"
 #include "blob_detect_par.cpp"
 
 void par(int img_size_bytes, int frame_width, int frame_height,
@@ -46,14 +42,9 @@ void par(int img_size_bytes, int frame_width, int frame_height,
     double duration_blob = (std::clock() - start) / (double) CLOCKS_PER_SEC;
     std::cout<<"    Blob: "<< duration_blob <<'\n';
 
-    // save
-    // write_ppm(frame_blur, "frame_blur_par.ppm", frame_width, frame_height, img_size_bytes);
-    // write_ppm_greyscale(frame_thresh, "frame_thresh_par.ppm", frame_width, frame_height, frame_width * frame_height);
-    // write_ppm_greyscale_short(frame_blobs, "frame_blobs_par.ppm", frame_width, frame_height, frame_width * frame_height);
 
     // free resources
     delete frame_blur;
     delete frame_thresh;
-    //delete frame_blobs;
 
 }

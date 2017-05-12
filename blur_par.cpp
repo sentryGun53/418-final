@@ -106,6 +106,7 @@ void blur_parallel (unsigned char *res, unsigned char *frame,
             blur_width, blur_height, (num_threads-1)*rows_per_thread, frame_height,
             0, frame_width);
 
+    // Join second half
     for (int i = num_threads/2; i < num_threads-1; i++) {
         pthread_join(thread_ids[i], NULL);
     }
