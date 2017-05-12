@@ -43,14 +43,8 @@ void seq(int img_size_bytes, int frame_width, int frame_height,
     double duration_blob = (std::clock() - start) / (double) CLOCKS_PER_SEC;
     std::cout<<"    Blob: "<< duration_blob <<'\n';
 
-    // save
-    // write_ppm(frame_blur, "frame_blur_seq.ppm", frame_width, frame_height, img_size_bytes);
-    // write_ppm_greyscale(frame_thresh, "frame_thresh_seq.ppm", frame_width, frame_height, frame_width * frame_height);
-    // write_ppm_greyscale_short(frame_blobs, "frame_blobs_seq.ppm", frame_width, frame_height, frame_width * frame_height);
-
     // free resources
     delete frame_blur;
     delete frame_thresh;
-    //delete frame_blobs;
 
 }
