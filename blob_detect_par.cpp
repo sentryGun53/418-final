@@ -43,7 +43,7 @@ typedef struct {
  */
 
 
-#define MAX_BLOBS_PER_THREAD 100
+#define MAX_BLOBS_PER_THREAD 200
 
 void label(unsigned short *output, unsigned char *input, struct blob *blobs, short width, short height, short start_row, short end_row, short start_label) {
 
@@ -194,13 +194,13 @@ int blob_detect_par(struct blob &biggest_blob, unsigned short *output, unsigned 
     args1.height = args2.height = args3.height = height;
     args1.start_row = 60;
     args1.end_row = 119;
-    args1.start_label = 101;
+    args1.start_label = MAX_BLOBS_PER_THREAD*1 + 1;
     args2.start_row = 120;
     args2.end_row = 179;
-    args2.start_label = 201;
+    args2.start_label = MAX_BLOBS_PER_THREAD*2 + 1;
     args3.start_row = 180;
     args3.end_row = 239;
-    args3.start_label = 301;
+    args3.start_label = MAX_BLOBS_PER_THREAD*3 + 1;
     pthread_create(&thread_id1, NULL, label_thread_start, &args1);
     pthread_create(&thread_id2, NULL, label_thread_start, &args2);
     pthread_create(&thread_id3, NULL, label_thread_start, &args3);
@@ -253,6 +253,8 @@ int blob_detect_par(struct blob &biggest_blob, unsigned short *output, unsigned 
 
     // go thorugh the un-merged list backwards, and merge towards beginning
     for (short i = MAX_BLOBS_PER_THREAD*4 - 1; i > 0; i--) {
+
+        if (blobs[i].label == 0) continue;
 
         // if this blob's label points to a different blob, merge with the lower blob
         if (blobs[i].label != i) {
