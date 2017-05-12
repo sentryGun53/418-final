@@ -68,6 +68,7 @@ int main (int argc,  char **argv) {
         std::cout<<"Parallel time: "<< duration_par <<'\n';
 
         std::cout<<"Sequential time - Parallel time: "<< (duration_seq - duration_par) <<'\n';
+        std::cout<<"Sequential time / Parallel time: "<< (duration_seq / duration_par) <<'\n';
 
         assert(compare(frame_blobs_seq, frame_blobs_par, FRAME_WIDTH, FRAME_HEIGHT));
 

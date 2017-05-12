@@ -2,17 +2,14 @@
 
 void blur (unsigned char *res, unsigned char *frame, unsigned char *blur_vector,
            int frame_width, int frame_height, int blur_width, int blur_height) {
-    // #pragma omp parallel for
+
+    int blur_height_half = blur_height/2;
+    int blur_width_half = blur_width/2;
+
     for (int row = 0; row < frame_height; row++) {
-        // #pragma omp parallel for
         for (int col = 0; col < frame_width; col++) {
             int center_pixel = (row * frame_width) + col;
             int center_pixel_index = center_pixel * 3;
-            char r = frame[center_pixel_index + 0];
-            char g = frame[center_pixel_index + 1];
-            char b = frame[center_pixel_index + 2];
-            int blur_height_half = blur_height/2;
-            int blur_width_half = blur_width/2;
             int new_r = 0;
             int new_g = 0;
             int new_b = 0;
