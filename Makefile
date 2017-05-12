@@ -1,11 +1,7 @@
 main:
-	g++ main.cpp -o main -I/usr/local/include -lraspicam -lmmal -lmmal_core -lmmal_util -L/opt/vc/lib -fopenmp
-
-test:
-	g++ test.cpp -o test -I/usr/local/include -lraspicam -lmmal -lmmal_core -lmmal_util -L/opt/vc/lib -fopenmp
-
-simd_step:
+	g++ -c -Wall -Wextra -Ofast -fopenmp -mfpu=neon -o blur_simd.o blur_simd.cpp
 	g++ -c -Wall -Wextra -Ofast -fopenmp -mfpu=neon -o bg_sub_simd.o bg_sub_simd.cpp
+	g++ test.cpp blur_simd.o bg_sub_simd.o -o run -I/usr/local/include -lraspicam -lmmal -lmmal_core -lmmal_util -L/opt/vc/lib -fopenmp
 
-simd:
-	g++ test.cpp bg_sub_simd.o -o test -I/usr/local/include -lraspicam -lmmal -lmmal_core -lmmal_util -L/opt/vc/lib -fopenmp
+clean:
+	$(RM) blur_simd.o bg_sub_simd.o run *.ppm
