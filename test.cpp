@@ -64,18 +64,18 @@ int main (int argc,  char **argv) {
         std::clock_t start_seq = std::clock();
         seq(img_size_bytes, FRAME_WIDTH, FRAME_HEIGHT, background, frame_raw, frame_blobs_seq);
         double duration_seq = (std::clock() - start_seq) / (double) CLOCKS_PER_SEC;
-        std::cout<<"Sequential time: "<< duration_seq << "\n \n";
+        std::cout<<"Sequential time: "<< duration_seq << "\t("<< (1/duration_seq) << " fps)\n \n";
 
         std::clock_t start_par = std::clock();
         par(img_size_bytes, FRAME_WIDTH, FRAME_HEIGHT, background, frame_raw, frame_blobs_par);
         double duration_par = (std::clock() - start_par) / (double) CLOCKS_PER_SEC;
-        std::cout<<"Parallel time: "<< duration_par << "\n \n";
+        std::cout<<"Parallel time:   "<< duration_par << "\t("<< (1/duration_par) << " fps)\n \n";
 
         std::cout<<"Sequential time - Parallel time: "<< (duration_seq - duration_par) <<'\n';
-        std::cout<<"Sequential time / Parallel time: "<< (duration_seq / duration_par) <<'\n';
 
         double speedup = duration_seq / duration_par;
-        std::cout<<"Speedup: "<< speedup << "x \n";
+        std::cout<<"Speedup: "<< speedup << "x \n\n";
+
 
         // assert(compare(frame_blobs_seq, frame_blobs_par, FRAME_WIDTH, FRAME_HEIGHT));
 
