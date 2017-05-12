@@ -10,7 +10,7 @@ using namespace std;
 
 void seq(int img_size_bytes, int frame_width, int frame_height,
          unsigned char *background, unsigned char *frame_raw,
-         unsigned short *frame_blobs) {
+         unsigned short *frame_blobs, struct blob &biggest_blob) {
 
     // setup buffers for image data
     unsigned char *frame_blur = new unsigned char[img_size_bytes]();
@@ -37,7 +37,6 @@ void seq(int img_size_bytes, int frame_width, int frame_height,
 
     // blob detection
     start = std::clock();
-    struct blob biggest_blob;
     int num_blobs;
     num_blobs = blob_detect(biggest_blob, frame_blobs, frame_thresh, frame_width, frame_height);
     double duration_blob = (std::clock() - start) / (double) CLOCKS_PER_SEC;

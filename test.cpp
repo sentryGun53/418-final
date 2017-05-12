@@ -32,6 +32,7 @@ int main (int argc,  char **argv) {
     unsigned char *frame_raw  = new unsigned char[img_size_bytes]();
     unsigned short *frame_blobs_seq = new unsigned short[FRAME_WIDTH * FRAME_HEIGHT]();
     unsigned short *frame_blobs_par = new unsigned short[FRAME_WIDTH * FRAME_HEIGHT]();
+    struct blob biggest_blob_seq, biggest_blob_par;
 
     // open connection to camera
     cout << "Opening Camera..." << endl;
@@ -62,19 +63,31 @@ int main (int argc,  char **argv) {
         std::cout<<"\n";
 
         std::clock_t start_seq = std::clock();
-        seq(img_size_bytes, FRAME_WIDTH, FRAME_HEIGHT, background, frame_raw, frame_blobs_seq);
+        seq(img_size_bytes, FRAME_WIDTH, FRAME_HEIGHT, background, frame_raw, frame_blobs_seq, biggest_blob_seq);
         double duration_seq = (std::clock() - start_seq) / (double) CLOCKS_PER_SEC;
         std::cout<<"Sequential time: "<< duration_seq << "\t("<< (1/duration_seq) << " fps)\n \n";
 
         std::clock_t start_par = std::clock();
-        par(img_size_bytes, FRAME_WIDTH, FRAME_HEIGHT, background, frame_raw, frame_blobs_par);
+        par(img_size_bytes, FRAME_WIDTH, FRAME_HEIGHT, background, frame_raw, frame_blobs_par, biggest_blob_par);
         double duration_par = (std::clock() - start_par) / (double) CLOCKS_PER_SEC;
         std::cout<<"Parallel time:   "<< duration_par << "\t("<< (1/duration_par) << " fps)\n \n";
 
-        std::cout<<"Sequential time - Parallel time: "<< (duration_seq - duration_par) <<'\n';
+        // std::cout<<"Sequential time - Parallel time: "<< (duration_seq - duration_par) <<'\n';
 
         double speedup = duration_seq / duration_par;
         std::cout<<"Speedup: "<< speedup << "x \n\n";
+
+        // verify results match
+        if (biggest_blob_seq.mass > 50) {
+            assert(biggest_blob_seq.x_min == biggest_blob_par.x_min);
+            assert(biggest_blob_seq.x_max == biggest_blob_par.x_max);
+            assert(biggest_blob_seq.y_min == biggest_blob_par.y_min);
+            assert(biggest_blob_seq.y_max == biggest_blob_par.y_max);
+            assert(biggest_blob_seq.centroid_x == biggest_blob_par.centroid_x);
+            assert(biggest_blob_seq.centroid_y == biggest_blob_par.centroid_y);
+            assert(biggest_blob_seq.mass == biggest_blob_par.mass);
+            std::cout<<"Results are correct.\n\n";
+        }
 
 
         // assert(compare(frame_blobs_seq, frame_blobs_par, FRAME_WIDTH, FRAME_HEIGHT));
