@@ -10,7 +10,7 @@ using namespace std;
 
 void seq(int img_size_bytes, int frame_width, int frame_height,
          unsigned char *background, unsigned char *frame_raw,
-         unsigned char *frame_blobs) {
+         unsigned short *frame_blobs) {
 
     // setup buffers for image data
     unsigned char *frame_blur = new unsigned char[img_size_bytes]();
@@ -37,11 +37,9 @@ void seq(int img_size_bytes, int frame_width, int frame_height,
     num_blobs = blob_detect(biggest_blob, frame_blobs, frame_thresh, frame_width, frame_height);
 
     // save
-    //write_ppm(background, "background.ppm", frame_width, frame_height, img_size_bytes);
-    //write_ppm(frame_raw, "frame_raw.ppm", frame_width, frame_height, img_size_bytes);
-    // write_ppm(frame_blur, "frame_blur_seq.ppm", frame_width, frame_height, img_size_bytes);
-    // write_ppm_greyscale(frame_thresh, "frame_thresh_seq.ppm", frame_width, frame_height, frame_width * frame_height);
-    // write_ppm_greyscale(frame_blobs, "frame_blobs_seq.ppm", frame_width, frame_height, frame_width * frame_height);
+    write_ppm(frame_blur, "frame_blur_seq.ppm", frame_width, frame_height, img_size_bytes);
+    write_ppm_greyscale(frame_thresh, "frame_thresh_seq.ppm", frame_width, frame_height, frame_width * frame_height);
+    write_ppm_greyscale_short(frame_blobs, "frame_blobs_seq.ppm", frame_width, frame_height, frame_width * frame_height);
 
     // free resources
     delete frame_blur;
