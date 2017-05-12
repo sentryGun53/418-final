@@ -204,7 +204,7 @@ int blob_detect(struct blob &biggest_blob, unsigned short *output, unsigned char
     // OPTIONAL: draw centroid
     int centroid_x = biggest_blob.centroid_x;
     int centroid_y = biggest_blob.centroid_y;
-    cout << centroid_x << "," << centroid_y << endl;
+    // cout << centroid_x << "," << centroid_y << endl;
 
     // OPTIONAL: magnify brightness differences and draw bounding boxes
     for (int row = 1; row < height-1; row++) {

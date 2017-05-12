@@ -28,22 +28,29 @@ void par(int img_size_bytes, int frame_width, int frame_height,
      3, 3, 9, 3, 3,
      3, 3, 3, 3, 3,
      3, 3, 3, 3, 3};
+    std::clock_t start = std::clock();
     blur_parallel(frame_blur, frame_raw, blur_vector, frame_width, frame_height, blur_width, blur_height);
+    double duration_blur = (std::clock() - start) / (double) CLOCKS_PER_SEC;
+    std::cout<<"    Blur: "<< duration_blur <<'\n';
 
     // background subtractiom
+    start = std::clock();
     bg_sub_parallel(background, frame_blur, frame_thresh, frame_width, frame_height);
-
-    write_ppm(frame_blur, "frame_blur_par.ppm", frame_width, frame_height, img_size_bytes);
-    write_ppm_greyscale(frame_thresh, "frame_thresh_par.ppm", frame_width, frame_height, frame_width * frame_height);
-
+    double duration_sub = (std::clock() - start) / (double) CLOCKS_PER_SEC;
+    std::cout<<"    Sub:  "<< duration_sub <<'\n';
 
     // blob detection
+    start = std::clock();
     struct blob biggest_blob;
     int num_blobs;
     num_blobs = blob_detect_par(biggest_blob, frame_blobs, frame_thresh, frame_width, frame_height);
+    double duration_blob = (std::clock() - start) / (double) CLOCKS_PER_SEC;
+    std::cout<<"    Blob: "<< duration_blob <<'\n';
 
     // save
-    write_ppm_greyscale_short(frame_blobs, "frame_blobs_par.ppm", frame_width, frame_height, frame_width * frame_height);
+    // write_ppm(frame_blur, "frame_blur_par.ppm", frame_width, frame_height, img_size_bytes);
+    // write_ppm_greyscale(frame_thresh, "frame_thresh_par.ppm", frame_width, frame_height, frame_width * frame_height);
+    // write_ppm_greyscale_short(frame_blobs, "frame_blobs_par.ppm", frame_width, frame_height, frame_width * frame_height);
 
     // free resources
     delete frame_blur;

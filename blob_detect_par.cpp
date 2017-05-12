@@ -8,6 +8,28 @@
 
 #include <stdlib.h>
 
+typedef struct {
+    unsigned short *output;
+    unsigned char *input;
+    struct blob *blobs;
+    short width;
+    short height;
+    short start_row;
+    short end_row;
+    short start_label;
+} label_args;
+
+
+typedef struct {
+    unsigned short *output;
+    unsigned char *input;
+    struct blob *blobs;
+    short width;
+    short height;
+    short stitch_row;
+} stitch_args;
+
+
 /*
  * input is a greyscale threshold image (1 byte per pixel) with
  * nonzero pixel values if motion was detected in a pixel
@@ -21,7 +43,7 @@
  */
 
 
-#define MAX_BLOBS_PER_THREAD 300
+#define MAX_BLOBS_PER_THREAD 100
 
 void label(unsigned short *output, unsigned char *input, struct blob *blobs, short width, short height, short start_row, short end_row, short start_label) {
 
@@ -139,32 +161,84 @@ void stitch(unsigned short *output, unsigned char *input, struct blob *blobs, sh
     }
 }
 
+void *label_thread_start(void *thread_arg) {
+    label_args *args = (label_args*)thread_arg;
+    label(args->output, args->input, args->blobs, args->width, args->height, args->start_row, args->end_row, args->start_label);
+}
+
+void *stitch_thread_start(void *thread_arg) {
+    stitch_args *args = (stitch_args*)thread_arg;
+    stitch(args->output, args->input, args->blobs, args->width, args->height, args->stitch_row);
+}
+
 int blob_detect_par(struct blob &biggest_blob, unsigned short *output, unsigned char *input, short width, short height) {
 
     // our list of blobs. TODO: better calculation of size here
-    struct blob blobs[MAX_BLOBS_PER_THREAD*4] = {0};
+    struct blob blobs[(MAX_BLOBS_PER_THREAD+1)*4] = {0};
 
     /*
      *   ThreadID   start_row   end_row
      *   0          1           59
      *   1          60          119
-     *   2          120         159
-     *   3          180         219
+     *   2          120         179
+     *   3          180         239
      */
 
+    // spawn 3 additional labeller threads (4 total)
+    pthread_t thread_id1, thread_id2, thread_id3;
+    label_args args1, args2, args3;
+    args1.output = args2.output = args3.output = output;
+    args1.input = args2.input = args3.input = input;
+    args1.blobs = args2.blobs = args3.blobs = blobs;
+    args1.width = args2.width = args3.width = width;
+    args1.height = args2.height = args3.height = height;
+    args1.start_row = 60;
+    args1.end_row = 119;
+    args1.start_label = 101;
+    args2.start_row = 120;
+    args2.end_row = 179;
+    args2.start_label = 201;
+    args3.start_row = 180;
+    args3.end_row = 239;
+    args3.start_label = 301;
+    pthread_create(&thread_id1, NULL, label_thread_start, &args1);
+    pthread_create(&thread_id2, NULL, label_thread_start, &args2);
+    pthread_create(&thread_id3, NULL, label_thread_start, &args3);
 
-    // spawn 4 threads
+    // MAIN THREAD:
     label(output, input, blobs, width, height,    1,   59,    1 );
-    label(output, input, blobs, width, height,   60,  119,   61 );
-    label(output, input, blobs, width, height,  120,  159,  121 );
-    label(output, input, blobs, width, height,  180,  219,  181 );
-    // join threads
+    // OTHER THREADS:
+    //     label(output, input, blobs, width, height,   60,  119,  101 );
+    //     label(output, input, blobs, width, height,  120,  179,  201 );
+    //     label(output, input, blobs, width, height,  180,  239,  301 );
 
-    // stitch
+    // join labeller threads
+    pthread_join(thread_id1, NULL);
+    pthread_join(thread_id2, NULL);
+    pthread_join(thread_id3, NULL);
+
+
+    // spawn 2 additional stitcher threads (3 total)
+    stitch_args sargs1, sargs2;
+    sargs1.output = sargs2.output = output;
+    sargs1.input = sargs2.input = input;
+    sargs1.blobs = sargs2.blobs = blobs;
+    sargs1.width = sargs2.width = width;
+    sargs1.height = sargs2.height = height;
+    sargs1.stitch_row = 120;
+    sargs2.stitch_row = 180;
+    pthread_create(&thread_id1, NULL, stitch_thread_start, &sargs1);
+    pthread_create(&thread_id2, NULL, stitch_thread_start, &sargs2);
+
+    // MAIN THREAD:
     stitch(output, input, blobs, width, height,   60 );
-    stitch(output, input, blobs, width, height,  120 );
-    stitch(output, input, blobs, width, height,  180 );
+    // OTHER THREADS:
+    //     stitch(output, input, blobs, width, height,  120 );
+    //     stitch(output, input, blobs, width, height,  180 );
 
+    // join stitcher threads
+    pthread_join(thread_id1, NULL);
+    pthread_join(thread_id2, NULL);
 
     // redirect all labels within a blob to equal the lowest-index label used by that blob
     for (short i = 1; i < MAX_BLOBS_PER_THREAD*4; i++) {
@@ -258,12 +332,12 @@ int blob_detect_par(struct blob &biggest_blob, unsigned short *output, unsigned 
     // OPTIONAL: draw centroid
     short centroid_x = biggest_blob.centroid_x;
     short centroid_y = biggest_blob.centroid_y;
-    cout << centroid_x << "," << centroid_y << endl;
+    // cout << centroid_x << "," << centroid_y << endl;
 
     // OPTIONAL: magnify brightness differences and draw bounding boxes
     for (short row = 1; row < height-1; row++) {
         for (short col = 1; col < width-1; col++) {
-            output[IDX(row, col)] = output[IDX(row, col)] * 30;
+            output[IDX(row, col)] = (output[IDX(row, col)] * 30) % 256;
 
             // bounding rails
             if ((col == x_min || col == x_max) && (row > y_min && row < y_max)) {

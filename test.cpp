@@ -41,8 +41,8 @@ int main (int argc,  char **argv) {
     }
 
     // wait a while until camera stabilizes
-    cout << "Sleeping for 3 secs" << endl;
-    sleep(3);
+    cout << "Sleeping for 1 secs" << endl;
+    sleep(1);
 
     // record background
     Camera.grab();
@@ -52,24 +52,31 @@ int main (int argc,  char **argv) {
 
     //for (int i = 0; i < 10; i++) {
         // capture
+        cout << "Sleeping for 3 secs" << endl;
+        sleep(3);
         Camera.grab();
         // extract the image in rgb format
         Camera.retrieve(frame_raw);
         write_ppm(frame_raw, "raw.ppm", FRAME_WIDTH, FRAME_HEIGHT, img_size_bytes);
 
+        std::cout<<"\n";
+
         std::clock_t start_seq = std::clock();
         seq(img_size_bytes, FRAME_WIDTH, FRAME_HEIGHT, background, frame_raw, frame_blobs_seq);
         double duration_seq = (std::clock() - start_seq) / (double) CLOCKS_PER_SEC;
-        std::cout<<"Sequential time: "<< duration_seq <<'\n';
+        std::cout<<"Sequential time: "<< duration_seq << "\n \n";
 
         std::clock_t start_par = std::clock();
         par(img_size_bytes, FRAME_WIDTH, FRAME_HEIGHT, background, frame_raw, frame_blobs_par);
         double duration_par = (std::clock() - start_par) / (double) CLOCKS_PER_SEC;
-        std::cout<<"Parallel time: "<< duration_par <<'\n';
+        std::cout<<"Parallel time: "<< duration_par << "\n \n";
 
         std::cout<<"Sequential time - Parallel time: "<< (duration_seq - duration_par) <<'\n';
 
-        assert(compare(frame_blobs_seq, frame_blobs_par, FRAME_WIDTH, FRAME_HEIGHT));
+        double speedup = duration_seq / duration_par;
+        std::cout<<"Speedup: "<< speedup << "x \n";
+
+        // assert(compare(frame_blobs_seq, frame_blobs_par, FRAME_WIDTH, FRAME_HEIGHT));
 
 
     //}
