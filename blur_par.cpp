@@ -72,7 +72,7 @@ void blur_parallel (unsigned char *res, unsigned char *frame,
                     int frame_width, int frame_height,
                     int blur_width, int blur_height) {
 
-    int num_threads = 8;
+    int num_threads = 46;
     pthread_t *thread_ids = new pthread_t[num_threads-1];
     blur_args *args = new blur_args[num_threads-1];
     int rows_per_thread = frame_height / num_threads;
