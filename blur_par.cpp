@@ -72,7 +72,7 @@ void blur_parallel (unsigned char *res, unsigned char *frame,
                     int frame_width, int frame_height,
                     int blur_width, int blur_height) {
 
-    int num_threads = 46;
+    int num_threads = 40;
     pthread_t *thread_ids = new pthread_t[num_threads-1];
     blur_args *args = new blur_args[num_threads-1];
     int rows_per_thread = frame_height / num_threads;
@@ -88,11 +88,14 @@ void blur_parallel (unsigned char *res, unsigned char *frame,
         args[i].end_row = (i+1) * rows_per_thread;
         args[i].start_col = 0;
         args[i].end_col = frame_width;
+        pthread_create(&(thread_ids[i]), NULL, blur_thread_start, &(args[i]));
+        /*
         // Run first half
         if (i < num_threads/2) {
             pthread_create(&(thread_ids[i]), NULL, blur_thread_start, &(args[i]));
-        }
+        }*/
     }
+    /*
     // Join first half
     for (int i = 0; i < num_threads/2; i++) {
         pthread_join(thread_ids[i], NULL);
@@ -102,11 +105,16 @@ void blur_parallel (unsigned char *res, unsigned char *frame,
     for (int i = num_threads/2; i < num_threads-1; i++) {
         pthread_create(&(thread_ids[i]), NULL, blur_thread_start, &(args[i]));
     }
+    */
     blur_helper (res, frame, blur_vector, frame_width, frame_height,
             blur_width, blur_height, (num_threads-1)*rows_per_thread, frame_height,
             0, frame_width);
-
+    /*
     for (int i = num_threads/2; i < num_threads-1; i++) {
+        pthread_join(thread_ids[i], NULL);
+    }
+    */
+    for (int i = 0; i < num_threads-1; i++) {
         pthread_join(thread_ids[i], NULL);
     }
 }
