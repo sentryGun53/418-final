@@ -23,8 +23,6 @@ void blur_helper (unsigned char *res, unsigned char *frame, unsigned char *blur_
         for (int col = start_col; col < end_col; col++) {
             int center_pixel = (row * frame_width) + col;
             int center_pixel_index = center_pixel * 3;
-            int blur_height_half = blur_height/2;
-            int blur_width_half = blur_width/2;
             int new_r = 0;
             int new_g = 0;
             int new_b = 0;

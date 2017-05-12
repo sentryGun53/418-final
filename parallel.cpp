@@ -9,6 +9,7 @@ using namespace std;
 //#include "blob_detect.cpp"
 #include "blur_par.cpp"
 #include "bg_sub_par.cpp"
+//#include "bg_sub_simd.h"
 #include "blob_detect_par.cpp"
 
 void par(int img_size_bytes, int frame_width, int frame_height,
